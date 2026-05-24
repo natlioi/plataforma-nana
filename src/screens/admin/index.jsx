@@ -158,6 +158,18 @@ const SelectField = ({ label, value, onChange, options }) => (
   </label>
 );
 
+const SearchInput = ({ placeholder = "Search…", value, onChange }) => (
+  <div style={{ position: "relative", flex: "1 1 180px", maxWidth: 320 }}>
+    <input
+      type="text" placeholder={placeholder} value={value || ""} onChange={(e) => onChange && onChange(e.target.value)}
+      style={{ width: "100%", height: 34, paddingLeft: 32, paddingRight: 12, border: "0.5px solid var(--line-strong)", borderRadius: 999, background: "var(--bg-elevated)", fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--ink-1)", outline: "none", boxSizing: "border-box" }}
+    />
+    <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--ink-4)", pointerEvents: "none", display: "flex" }}>
+      <Icon name="search" size={14} />
+    </span>
+  </div>
+);
+
 // ─── File dropzone ──────────────────────────────────────────
 const FileDropzone = ({ accept = "application/pdf", onFile, currentName, sublabel }) => {
   const [drag, setDrag] = aState(false);

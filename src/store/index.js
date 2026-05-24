@@ -41,6 +41,7 @@ state.session = loadSession()
 
 // ─── Supabase data loading ───────────────────────────────────
 async function loadFromSupabase() {
+  if (!supabase) { initialized = true; notify(); return }
   const [
     { data: profiles },
     { data: studentMeta },
