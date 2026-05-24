@@ -164,7 +164,7 @@ const RecentWordRow = ({ word, pos, hint, status, onClick }) => {
   );
 };
 
-const HomeScreen = ({ setRoute }) => {
+const HomeScreen = ({ setRoute, setRunnerTarget }) => {
   const s = useStore();
   const student = s.student;
   const greeting = student.targetLang === "French" ? "Bonjour" : "Hello";
@@ -172,89 +172,121 @@ const HomeScreen = ({ setRoute }) => {
   const todayLabel = `${today.toLocaleDateString("en-US", { weekday: "long" })} · ${today.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`;
   const lastClass = [...s.classes].filter((c) => c.status === "done").sort((a, b) => b.date.localeCompare(a.date))[0];
   const lastClassLabel = lastClass ? new Date(lastClass.date).toLocaleDateString("en-US", { weekday: "long" }) : "your last class";
+  const nextClass = s.classes.find((c) => c.status === "scheduled");
+  const nextClassLabel = nextClass ? new Date(nextClass.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }) : null;
 
   const recentWords = useMemo(() => {
     return s.words.filter((w) => w.status !== "hidden").slice(0, 5);
   }, [s.words]);
 
   const pending = s.assignments.filter((a) => a.status !== "done");
+  const allDone = pending.length === 0;
   const nextHomework = pending[0];
   const wordsInDict = s.words.filter((w) => w.status !== "hidden").length;
   const newWords = s.words.filter((w) => w.status === "new").length;
   const favMaterials = s.materials.filter((m) => m.fav).length;
 
   return (
-    <div data-screen-label="Home" style={{ padding: "44px 56px 56px", maxWidth: 980 }}>
+    <div data-screen-label="Home" style={{ padding: "44px 56px 56px", maxWidth: 1200 }}>
       <PageHeader
         eyebrow={todayLabel}
         title={`${greeting},`}
         accent={`${student.name.split(" ")[0]}.`}
-        subtitle={`You have ${pending.length === 0 ? "no" : pending.length} pending ${pending.length === 1 ? "assignment" : "assignments"} and ${newWords} new words waiting. Nothing urgent — pick a thread.`}
-        right={
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <SearchInput placeholder="Search anything…" />
-          </div>
+        subtitle={allDone
+          ? "All homework done — well played! Browse materials or practise flashcards."
+          : `You have ${pending.length} pending ${pending.length === 1 ? "assignment" : "assignments"} and ${newWords} new words waiting.`
         }
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "var(--d-gap)", marginBottom: "var(--d-gap)" }}>
-        <ModuleCard
-          tone="lavender"
-          icon="book"
-          eyebrow={`Dictionary · ${wordsInDict} words`}
-          title={<>Your words from <i>{lastClassLabel}'s class</i>.</>}
-          body={`${newWords} new entries waiting · tap any to mark as mastered.`}
-          footer="Open dictionary"
-          onClick={() => setRoute("dictionary")}
-          big
-        />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "var(--d-gap)" }}>
+        {/* Left column: module cards */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--d-gap)" }}>
-          <ModuleCard
-            tone="peach"
-            icon="pencil"
-            eyebrow={`Homework · ${pending.length} pending`}
-            title={nextHomework ? <>{nextHomework.title}</> : <>All caught up!</>}
-            body={nextHomework ? `Due ${nextHomework.due} · ${nextHomework.minutes} min` : "Take a break or review flashcards."}
-            footer={nextHomework ? "Continue" : "Browse done"}
-            onClick={() => setRoute("homework")}
-          />
-          <ModuleCard
-            tone="sky"
-            icon="folder"
-            eyebrow="Materials"
-            title={<>{favMaterials} <i>favourites</i>.</>}
-            body="Reading dossier, podcasts, conjugation tables."
-            footer="Browse library"
-            onClick={() => setRoute("materials")}
-          />
-        </div>
-      </div>
+          {/* Homework = big card */}
+          {allDone ? (
+            <ModuleCard
+              tone="mint"
+              icon="check"
+              eyebrow="Homework"
+              title={<>Homework completed <span style={{ fontStyle: "normal" }}>🎉</span></>}
+              body={nextClassLabel ? `Next class: ${nextClassLabel}. See your materials or review flashcards.` : "Great job — take a break or review flashcards."}
+              footer="View materials & exercises"
+              onClick={() => setRoute("materials")}
+              big
+            />
+          ) : (
+            <ModuleCard
+              tone="peach"
+              icon="pencil"
+              eyebrow={`Homework · ${pending.length} pending`}
+              title={nextHomework ? <>{nextHomework.title}</> : <>Your homework</>}
+              body={nextHomework ? `Due ${nextHomework.due} · ${nextHomework.minutes} min` : "Open to see what's waiting."}
+              footer={nextHomework ? "Continue" : "Open homework"}
+              onClick={() => {
+                if (nextHomework && setRunnerTarget) {
+                  setRunnerTarget(nextHomework.id);
+                  setRoute("homework-runner");
+                } else {
+                  setRoute("homework");
+                }
+              }}
+              big
+            />
+          )}
 
-      <div style={{ background: "var(--bg-elevated)", borderRadius: "var(--r-lg)", padding: "26px 28px", border: "0.5px solid var(--line)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-          <div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 0.08, color: "var(--ink-3)", textTransform: "uppercase", marginBottom: 6 }}>
-              From your last class
-            </div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 30, color: "var(--ink-1)", lineHeight: 1.2, paddingBottom: 2 }}>
-              Words you used on <i>{lastClassLabel}</i>
-            </div>
-          </div>
-          <button onClick={() => setRoute("dictionary")} style={{ background: "transparent", border: "1px solid var(--line-strong)", padding: "8px 14px", borderRadius: 999, fontFamily: "var(--font-sans)", fontSize: 12, color: "var(--ink-2)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
-            See all {wordsInDict} <Icon name="arrowR" size={13} />
-          </button>
-        </div>
-        <div style={{ marginTop: 14 }}>
-          {recentWords.map((w) => (
-            <RecentWordRow
-              key={w.id}
-              word={w.w}
-              pos={w.pos}
-              hint={w.tgt}
-              status={w.status}
+          {/* Smaller cards row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--d-gap)" }}>
+            <ModuleCard
+              tone="lavender"
+              icon="book"
+              eyebrow={`Dictionary · ${wordsInDict} words`}
+              title={<>{newWords} <i>new</i> words</>}
+              body="Tap to review or mark as mastered."
+              footer="Open dictionary"
               onClick={() => setRoute("dictionary")}
             />
-          ))}
+            <ModuleCard
+              tone="sky"
+              icon="folder"
+              eyebrow="Materials"
+              title={<>{favMaterials} <i>favourites</i></>}
+              body="Podcasts, reading, conjugation tables."
+              footer="Browse library"
+              onClick={() => setRoute("materials")}
+            />
+          </div>
+        </div>
+
+        {/* Right column: words from last class + search */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--d-gap)" }}>
+          <SearchInput placeholder="Search anything…" />
+
+          <div style={{ background: "var(--bg-elevated)", borderRadius: "var(--r-lg)", padding: "22px 24px", border: "0.5px solid var(--line)", flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+              <div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 0.08, color: "var(--ink-3)", textTransform: "uppercase", marginBottom: 6 }}>
+                  From your last class
+                </div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "var(--ink-1)", lineHeight: 1.2, paddingBottom: 2 }}>
+                  Words from <i>{lastClassLabel}</i>
+                </div>
+              </div>
+              <button onClick={() => setRoute("dictionary")} style={{ background: "transparent", border: "1px solid var(--line-strong)", padding: "6px 12px", borderRadius: 999, fontFamily: "var(--font-sans)", fontSize: 11, color: "var(--ink-2)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                All <Icon name="arrowR" size={11} />
+              </button>
+            </div>
+            <div>
+              {recentWords.map((w) => (
+                <RecentWordRow
+                  key={w.id}
+                  word={w.w}
+                  pos={w.pos}
+                  hint={w.tgt}
+                  status={w.status}
+                  onClick={() => setRoute("dictionary")}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

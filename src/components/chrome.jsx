@@ -69,7 +69,7 @@ export const NavBtn = ({ icon, active, dot, onClick, label }) => (
   </button>
 )
 
-export const Sidebar = ({ route, setRoute, badges, initials = "LM", onLogout }) => {
+export const Sidebar = ({ route, setRoute, badges, initials = "LM", onLogout, onAvatarClick, showProfileActive }) => {
   const items = [
     { id: "home", icon: "home", label: "Home" },
     { id: "dictionary", icon: "book", label: "Dictionary" },
@@ -89,7 +89,7 @@ export const Sidebar = ({ route, setRoute, badges, initials = "LM", onLogout }) 
         {secondary.map((it) => <NavBtn key={it.id} icon={it.icon} label={it.label} active={route === it.id} onClick={() => setRoute(it.id)} />)}
       </div>
       <NavBtn icon="cog" label="Sign out" onClick={onLogout} />
-      <div style={{ marginTop: 6 }}><Avatar name={initials} size={36} tone="lavender" /></div>
+      <button onClick={onAvatarClick} title="Profile" style={{ marginTop: 6, background: "transparent", border: showProfileActive ? "2px solid var(--ink-1)" : "2px solid transparent", borderRadius: "50%", padding: 0, cursor: "pointer", transition: "border-color .15s ease" }}><Avatar name={initials} size={36} tone="lavender" /></button>
     </aside>
   )
 }
