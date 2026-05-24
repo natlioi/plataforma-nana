@@ -1,0 +1,27 @@
+{
+  "name": "plataforma-nana",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/natlioi/plataforma-nana.git"
+  },
+  "author": "Natália Lioi",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.2",
+    "vite": "^8.0.14"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.1",
+    "pdfjs-dist": "^5.7.284",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  }
+}
