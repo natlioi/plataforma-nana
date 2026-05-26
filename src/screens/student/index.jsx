@@ -187,7 +187,7 @@ const HomeScreen = ({ setRoute, setRunnerTarget }) => {
   const favMaterials = s.materials.filter((m) => m.fav).length;
 
   return (
-    <div data-screen-label="Home" style={{ padding: "44px 56px 56px", maxWidth: 1200 }}>
+    <div data-screen-label="Home" style={{ padding: "44px 56px 56px", maxWidth: 980 }}>
       <PageHeader
         eyebrow={todayLabel}
         title={`${greeting},`}
@@ -198,95 +198,89 @@ const HomeScreen = ({ setRoute, setRunnerTarget }) => {
         }
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "var(--d-gap)" }}>
-        {/* Left column: module cards */}
+      {/* Module cards: homework big on left, dictionary + materials stacked on right */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "var(--d-gap)", marginBottom: "var(--d-gap)" }}>
+        {allDone ? (
+          <ModuleCard
+            tone="mint"
+            icon="check"
+            eyebrow="Homework"
+            title={<>Homework completed <span style={{ fontStyle: "normal" }}>🎉</span></>}
+            body={nextClassLabel ? `Next class: ${nextClassLabel}. See your materials or review flashcards.` : "Great job — take a break or review flashcards."}
+            footer="View materials & exercises"
+            onClick={() => setRoute("materials")}
+            big
+          />
+        ) : (
+          <ModuleCard
+            tone="peach"
+            icon="pencil"
+            eyebrow={`Homework · ${pending.length} pending`}
+            title={nextHomework ? <>{nextHomework.title}</> : <>Your homework</>}
+            body={nextHomework ? `Due ${nextHomework.due} · ${nextHomework.minutes} min` : "Open to see what's waiting."}
+            footer={nextHomework ? "Continue" : "Open homework"}
+            onClick={() => {
+              if (nextHomework && setRunnerTarget) {
+                setRunnerTarget(nextHomework.id);
+                setRoute("homework-runner");
+              } else {
+                setRoute("homework");
+              }
+            }}
+            big
+          />
+        )}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--d-gap)" }}>
-          {/* Homework = big card */}
-          {allDone ? (
-            <ModuleCard
-              tone="mint"
-              icon="check"
-              eyebrow="Homework"
-              title={<>Homework completed <span style={{ fontStyle: "normal" }}>🎉</span></>}
-              body={nextClassLabel ? `Next class: ${nextClassLabel}. See your materials or review flashcards.` : "Great job — take a break or review flashcards."}
-              footer="View materials & exercises"
-              onClick={() => setRoute("materials")}
-              big
-            />
-          ) : (
-            <ModuleCard
-              tone="peach"
-              icon="pencil"
-              eyebrow={`Homework · ${pending.length} pending`}
-              title={nextHomework ? <>{nextHomework.title}</> : <>Your homework</>}
-              body={nextHomework ? `Due ${nextHomework.due} · ${nextHomework.minutes} min` : "Open to see what's waiting."}
-              footer={nextHomework ? "Continue" : "Open homework"}
-              onClick={() => {
-                if (nextHomework && setRunnerTarget) {
-                  setRunnerTarget(nextHomework.id);
-                  setRoute("homework-runner");
-                } else {
-                  setRoute("homework");
-                }
-              }}
-              big
-            />
-          )}
+          <ModuleCard
+            tone="lavender"
+            icon="book"
+            eyebrow={`Dictionary · ${wordsInDict} words`}
+            title={<>{newWords} <i>new</i> words</>}
+            body="Tap to review or mark as mastered."
+            footer="Open dictionary"
+            onClick={() => setRoute("dictionary")}
+          />
+          <ModuleCard
+            tone="sky"
+            icon="folder"
+            eyebrow="Materials"
+            title={<>{favMaterials} <i>favourites</i></>}
+            body="Podcasts, reading, conjugation tables."
+            footer="Browse library"
+            onClick={() => setRoute("materials")}
+          />
+        </div>
+      </div>
 
-          {/* Smaller cards row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--d-gap)" }}>
-            <ModuleCard
-              tone="lavender"
-              icon="book"
-              eyebrow={`Dictionary · ${wordsInDict} words`}
-              title={<>{newWords} <i>new</i> words</>}
-              body="Tap to review or mark as mastered."
-              footer="Open dictionary"
-              onClick={() => setRoute("dictionary")}
-            />
-            <ModuleCard
-              tone="sky"
-              icon="folder"
-              eyebrow="Materials"
-              title={<>{favMaterials} <i>favourites</i></>}
-              body="Podcasts, reading, conjugation tables."
-              footer="Browse library"
-              onClick={() => setRoute("materials")}
-            />
+      {/* Words from last class — full width, with search on the right */}
+      <div style={{ background: "var(--bg-elevated)", borderRadius: "var(--r-lg)", padding: "26px 28px", border: "0.5px solid var(--line)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: 0.08, color: "var(--ink-3)", textTransform: "uppercase", marginBottom: 6 }}>
+              From your last class
+            </div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 30, color: "var(--ink-1)", lineHeight: 1.2, paddingBottom: 2 }}>
+              Words you used on <i>{lastClassLabel}</i>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <SearchInput placeholder="Search anything…" />
+            <button onClick={() => setRoute("dictionary")} style={{ background: "transparent", border: "1px solid var(--line-strong)", padding: "8px 14px", borderRadius: 999, fontFamily: "var(--font-sans)", fontSize: 12, color: "var(--ink-2)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+              See all {wordsInDict} <Icon name="arrowR" size={13} />
+            </button>
           </div>
         </div>
-
-        {/* Right column: words from last class + search */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--d-gap)" }}>
-          <SearchInput placeholder="Search anything…" />
-
-          <div style={{ background: "var(--bg-elevated)", borderRadius: "var(--r-lg)", padding: "22px 24px", border: "0.5px solid var(--line)", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-              <div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: 0.08, color: "var(--ink-3)", textTransform: "uppercase", marginBottom: 6 }}>
-                  From your last class
-                </div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "var(--ink-1)", lineHeight: 1.2, paddingBottom: 2 }}>
-                  Words from <i>{lastClassLabel}</i>
-                </div>
-              </div>
-              <button onClick={() => setRoute("dictionary")} style={{ background: "transparent", border: "1px solid var(--line-strong)", padding: "6px 12px", borderRadius: 999, fontFamily: "var(--font-sans)", fontSize: 11, color: "var(--ink-2)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                All <Icon name="arrowR" size={11} />
-              </button>
-            </div>
-            <div>
-              {recentWords.map((w) => (
-                <RecentWordRow
-                  key={w.id}
-                  word={w.w}
-                  pos={w.pos}
-                  hint={w.tgt}
-                  status={w.status}
-                  onClick={() => setRoute("dictionary")}
-                />
-              ))}
-            </div>
-          </div>
+        <div style={{ marginTop: 14 }}>
+          {recentWords.map((w) => (
+            <RecentWordRow
+              key={w.id}
+              word={w.w}
+              pos={w.pos}
+              hint={w.tgt}
+              status={w.status}
+              onClick={() => setRoute("dictionary")}
+            />
+          ))}
         </div>
       </div>
     </div>
